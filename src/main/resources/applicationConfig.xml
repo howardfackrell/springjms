@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd"
+        >
+
+
+
+    <!--<bean id="jmsFactory" class="org.apache.activemq.ActiveMQConnectionFactory">-->
+        <!--<property name="brokerURL">-->
+            <!--&lt;!&ndash;<value>tcp://msg-amq-1.octanner.com:61616</value>&ndash;&gt;-->
+            <!--<value>tcp://msg-activemq-1.octanner.com:61616</value>-->
+
+            <!--&lt;!&ndash;<value>tcp://msg-amq-1.qa.octanner.com:61616</value>&ndash;&gt;-->
+            <!--&lt;!&ndash;<value>tcp://msg-activemq-1.qa.octanner.com:61616</value>&ndash;&gt;-->
+
+            <!--&lt;!&ndash;<value>tcp://msg-amq-1.dev.octanner.com:61616</value>&ndash;&gt;-->
+            <!--&lt;!&ndash;<value>tcp://msg-activemq-1.dev.octanner.com:61616</value>&ndash;&gt;-->
+
+
+            <!--&lt;!&ndash;<value>tcp://i28450.octanner.com:61616?wireFormat.maxInactivityDuration=1000&amp;keepAlive=false&amp;soTimeout=500&amp;trace=true</value>&ndash;&gt;-->
+            <!--&lt;!&ndash;<value>tcp://localhost:61616?wireFormat.maxInactivityDuration=30000</value>&ndash;&gt;-->
+
+        <!--</property>-->
+    <!--</bean>-->
+
+    <!--<bean id="transactionManager" class="org.springframework.jms.connection.JmsTransactionManager" >-->
+        <!--<property name="connectionFactory" ref="jmsFactory" />-->
+    <!--</bean>-->
+
+    <!--<bean name="jmsTemplate" class="org.springframework.jms.core.JmsTemplate" >-->
+        <!--<property name="connectionFactory" ref="jmsFactory"></property>-->
+    <!--</bean>-->
+
+    <!--<bean id="queue" class="org.apache.activemq.command.ActiveMQQueue">-->
+        <!--<property name="physicalName" value="howardtest" />-->
+        <!--&lt;!&ndash;<property name="physicalName" value="brochureQueue" />&ndash;&gt;-->
+    <!--</bean>-->
+
+
+
+    <!--  ============================================   -->
+
+    <bean id="jndiTemplate" class="org.springframework.jndi.JndiTemplate">
+        <property name="environment">
+            <props>
+                <prop key="java.naming.factory.initial">org.apache.activemq.jndi.ActiveMQInitialContextFactory</prop>
+                <prop key="java.naming.provider.url">tcp://msg-activemq-1.dev.octanner.com:61616?jms.prefetchPolicy.queuePrefetch=1</prop>
+                <!--<prop key="java.naming.provider.url">tcp://i28450.octanner.com:61616?wireFormat.maxInactivityDuration=1000&amp;keepAlive=false&amp;soTimeout=500&amp;trace=true</prop>-->
+                <prop key="java.naming.security.principal">system</prop>
+                <prop key="java.naming.security.credentials">manager</prop>
+                <prop key="queue.howardtest">howardtest</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="queue" class="org.springframework.jndi.JndiObjectFactoryBean">
+        <property name="jndiName" value="howardtest"/>
+        <property name="jndiTemplate" ref="jndiTemplate"/>
+    </bean>
+
+    <bean id="jmsConnectionFactoryTarget" class="org.springframework.jndi.JndiObjectFactoryBean">
+        <property name="jndiName" value="ConnectionFactory"/>
+        <property name="jndiTemplate" ref="jndiTemplate"/>
+    </bean>
+
+    <bean id="jmsFactory" class="org.springframework.jms.connection.SingleConnectionFactory">
+        <property name="reconnectOnException" value="true" />
+        <property name="targetConnectionFactory" ref="jmsConnectionFactoryTarget"/>
+    </bean>
+
+    <bean id="transactionManager" class="org.springframework.jms.connection.JmsTransactionManager">
+        <property name="connectionFactory" ref="jmsFactory" />
+    </bean>
+
+    <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory"/>
+        <property name="pubSubDomain" value="false"/>
+    </bean>
+
+</beans>
+
+
